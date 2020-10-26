@@ -10,6 +10,10 @@ export default function createUploadManager(options, handlers) {
   if (options.config && options.config.forceDirect) {
       return new Direct(options, handlers);
   }
+  // 是否强制为分片模式，如果是则不进行判断，直接使用分片上传
+  if(options.config && options.config.forceResume) {
+    return new Resume(options, handlers);
+  }
   // 如果大于4MB则分片，否则直传
   return options.file.size > 4 * MB
       ? new Resume(options, handlers)

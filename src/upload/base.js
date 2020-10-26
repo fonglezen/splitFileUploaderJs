@@ -10,6 +10,7 @@ class Base {
     this.aborted = false;
     this.retryCount = 0;
     this.config = Object.assign({
+      path: '',
       chunkHeaders: {},
       mkHeaders: {},
       requestIdField: 'requestId', // 上传请求响应头中返回的请求id字段
@@ -22,6 +23,7 @@ class Base {
       uphost: '',
       upprotocol: 'https:',
       forceDirect: false,
+      forceResume: false,
       chunkSize: DEFAULT_CHUNK_SIZE,
       concurrentRequestLimit: 3 // 请求并发数
     }, options.config);
