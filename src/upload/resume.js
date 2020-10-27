@@ -4,7 +4,6 @@ import {
 } from '../pool';
 import {
   uploadChunk,
-  uploadComplete,
 } from '../api';
 import Base from './base';
 /** 是否为正整数 */
@@ -43,9 +42,8 @@ export default class Resume extends Base {
     // [pool.runTask, resume.uploadChunk(), resume.updateChunkProgress(), utils.computeMd5(), 
     // resume.updateChunkProgress(), api.uploadChunk(), resume.updateChunkProgress(), utils.setLocalFileInfo()]
     // 当pool.runTask()出栈后，则执行 pool.resolve()方法，该item执行完毕，继续调用pool.check()方法，知道Promise.all()中promise全部完成
-    // 调用resume.mkFileReq()方法
     // 该方法未异步执行，入栈后，执行下一行
-    const result = Promise.all(uploadChunks).then(() => this.mkFileReq());
+    const result = Promise.all(uploadChunks).then(() => this.updateMkFileProgress(1));
 
     // 该行代码为result的链式then方法，入微任务队列，执行下一行代码
     // 开始进行上传请求，完成上传后执行清理工作
@@ -68,6 +66,7 @@ export default class Resume extends Base {
     } = chunkInfo;
     const info = this.uploadedList[index];
     const shouldCheckMD5 = this.config.checkByMD5;
+    // 使用已有缓存
     const reuseSaved = () => {
       this.updateChunkProgress(chunk.size, index);
     };
@@ -83,14 +82,24 @@ export default class Resume extends Base {
     const onProgress = (data) => {
       this.updateChunkProgress(data.loaded, index);
     };
+    const formdata = this.getUploadChunkFormData({chunk, index});
     const requestOptions = {
-      body: chunk,
+      body: formdata,
       headers: this.config.chunkHeaders,
       onProgress,
       onCreate: (xhr) => this.addXhr(xhr),
       requestIdField: this.config.requestIdField,
     };
-    const response = await uploadChunk(this.key, chunkInfo.index + 1, this.getUploadInfo(), requestOptions);
+    const response = await uploadChunk(
+      {
+        key: this.key,
+        options: requestOptions,
+        method: this.config.uploadChunkMethod,
+        url: this.config.path,
+        uploadInfo: getUploadInfo,
+        index: chunkInfo.index,
+      }
+    );
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
     onProgress({
       loaded: chunk.size,
@@ -105,23 +114,6 @@ export default class Resume extends Base {
       id: this.uploadId,
       data: this.uploadedList
     });
-  }
-
-  /**
-   * 全部分片上传完成，执行完成上传后的任务
-   */
-  async mkFileReq() {
-    // 需要额外提交的数据
-    const data = Object.assign({}, this.customVars);
-    // 调用api.uploadComplete()
-    const result = await uploadComplete(this.token, this.key, this.getUploadInfo(), {
-      onCreate: xhr => this.addXhr(xhr),
-      body: JSON.stringify(data),
-      headers: this.config.mkHeaders,
-      requestIdField: this.config.requestIdField,
-    });
-    this.updateMkFileProgress(1);
-    return result;
   }
 
   /**
@@ -216,5 +208,29 @@ export default class Resume extends Base {
     };
     // 调用onData回调函数, onData  继承自base, 来源于用户传入的handlers的onData
     this.onData(this.progress);
+  }
+
+
+  getUploadChunkFormData({chunk, index}) {
+    const formdata = new FormData();
+    if(this.customVars) {
+      for (const key in object) {
+        const value = object[key];
+        formdata.append(key, value);
+      }
+    }
+    const fields = this.putExtraFields;
+    fields.forEach(field => {
+      if(field && this.getPutExtraField(field)) {
+        if(field === 'file') {
+          formdata.append(this.getPutExtraField(field), chunk);
+        }else if(field === 'index') {
+          formdata.append(this.getPutExtraField(field), index);
+        }else{
+          formdata.append(this.getPutExtraField(field), this.getPutExtraData(field));
+        }
+      }
+    });
+    return formdata;
   }
 }

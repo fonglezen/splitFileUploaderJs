@@ -6,24 +6,14 @@ import { Observable } from './observable';
  * @param {File} params0.file 需要上传的文件
  * @param {string} params0.key 上传文件的唯一标识
  * @param {object} params0.config 上传配置
- * 
- * config配置：
- * useCdnDomain: true,
- * disableStatisticsReport: false,
- * retryCount: 3,
- * checkByMD5: false,
- * uphost: '',
- * upprotocol: 'https:',
- * forceDirect: false,
- * chunkSize: DEFAULT_CHUNK_SIZE,
- * concurrentRequestLimit: 3
  */
-function upload({file, key, config, customVars}) {
+function upload({file, key, config, customVars, putExtra}) {
   const options = {
     file,
     key,
     config,
     customVars,
+    putExtra,
   }
   const createManager = (observer) => {
     const manager = createUploadManager(options, {

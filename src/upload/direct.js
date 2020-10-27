@@ -7,13 +7,8 @@ class Direct extends Base {
   // 开始上传文件
   async run() {
     const formData = new FormData();
-    // file字段名称需要添加自定义属性名
-    formData.append(this.config.fileParamName, this.file);
-    if (this.key != null) {
-      // 文件标识参数名支持自定义
-      formData.append(this.config.keyParamName, this.key);
-    }
     if (this.customVars) {
+      const customVars = this.customVars;
       Object.keys(customVars).forEach(key => formData.append(key, customVars[key]));
     }
     const result = await request(this.uploadUrl, {

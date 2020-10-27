@@ -1,8 +1,53 @@
-import {
-  getUploadUrl
-} from '../api';
 export const DEFAULT_CHUNK_SIZE = 4; // 单位 MB
 const GB = 1024 ** 3;
+
+const putExtraMethods = {
+  fileName: function() {
+    return this.file && this.file.name;
+  },
+  fileSize: function() {
+    return this.file && this.file.size;
+  },
+  fileKey: function() {
+    return this.getLocalKey();
+  },
+  chunkSize: function() {
+    return this.config.chunkSize;
+  },
+  totalChunksCount: function() {
+    return this.chunks && this.chunks.length;
+  },
+  chunkIndex: function() {
+    console.warn('无法通过该方法获取chunkIndex，请直接在uploadchunk方法中获取');
+  },
+  file: function() {
+    console.warn('无法通过该方法获取file, 请直接在uploadChunk方法中获取');
+  }
+};
+
+const putExtraFiled = {
+  file: function() {
+    return this.putExtra && this.putExtra.file || 'file';
+  },
+  fileName: function() {
+    return this.putExtra && this.putExtra.fileName || 'fileName';
+  },
+  fileSize: function() {
+    return this.putExtra && this.putExtra.fileSize || 'fileSize';
+  },
+  fileKey: function() {
+    return this.putExtra && this.putExtra.fileKey || 'fileKey';
+  },
+  chunkSize: function() {
+    return this.putExtra && this.putExtra.chunkSize || 'chunkSize';
+  },
+  totalChunksCount: function() {
+    return this.putExtra && this.putExtra.totalChunksCount || 'totalChunksCount';
+  },
+  chunkIndex: function() {
+    return this.putExtra && this.putExtra.chunkIndex || 'chunkIndex';
+  },
+};
 
 class Base {
   constructor(options, handlers) {
@@ -10,30 +55,38 @@ class Base {
     this.aborted = false;
     this.retryCount = 0;
     this.config = Object.assign({
-      path: '',
-      chunkHeaders: {},
-      mkHeaders: {},
+      path: '', // 上传请求url
+      uploadChunkMethod: 'PUT',
+      uploadCompleteMethod: 'POST',
+      chunkHeaders: {}, // 上传分片时的headers配置
+      mkHeaders: {},    // 上传完成请求的headers
       requestIdField: 'requestId', // 上传请求响应头中返回的请求id字段
-      keyParamName: 'key',
-      fileParamName: 'file',
-      useCdnDomain: true,
-      disableStatisticsReport: false,
       retryCount: 3,
       checkByMD5: false,
-      uphost: '',
-      upprotocol: 'https:',
       forceDirect: false,
       forceResume: false,
       chunkSize: DEFAULT_CHUNK_SIZE,
       concurrentRequestLimit: 3 // 请求并发数
     }, options.config);
     this.customVars = options.customVars;
+    this.putExtraFields = ['fileName', 'fileSize', 'fileKey', 'chunkSize', 'totalChunksCount', 'chunkIndex', 'file'];
+    this.putExtra = options.putExtra;
     this.file = options.file;
     this.key = options.key; // 上传文件的唯一标识
     this.onData = handlers.onData;
     this.onError = handlers.onError;
     this.onComplete = handlers.onComplete;
   }
+
+  getPutExtraData(field) {
+    const extrafield = field && putExtraFiled[field].call(this);
+    return extrafield && putExtraMethods[extrafield] && putExtraMethods[extrafield].call(this) || '';
+  }
+
+  getPutExtraField(field) {
+    return putExtraFiled[field].call(this);
+  }
+
   async putFile() {
     this.aborted = false;
     if (this.file.size > 10000 * GB) {
@@ -43,7 +96,7 @@ class Base {
     }
     try {
       // 获取上传文件请求url
-      this.uploadUrl = await getUploadUrl(this.config);
+      this.uploadUrl = this.config.path;
       this.uploadAt = new Date().getTime();
       // 开始上传文件，调用run()方法，run方法不在base类中定义，在Direct和Resume类中实现
       const result = await this.run();

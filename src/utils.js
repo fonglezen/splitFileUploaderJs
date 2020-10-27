@@ -15,6 +15,7 @@ export function getChunks(file, blockSize) {
   const chunks = [];
   const count = Math.ceil(file.size / chunkByteSize);
   for (let i = 0; i < count; i++) {
+    // chunk: 一个新的 Blob 对象，它包含了原始 Blob 对象的某一个段的数据。
     const chunk = file.slice(chunkByteSize * i, i === count - 1 ? file.size : chunkByteSize * (i + 1));
     chunks.push(chunk);
   }
@@ -79,18 +80,6 @@ export function getLocalFileInfo(localKey) {
     }
     return null;
   }
-}
-
-export function getHeadersForChunkUpload(header) {
-  return Object.assign({
-    'content-type': 'application/octet-stream'
-  }, header);
-}
-
-export function getHeadersForMkFile(header) {
-  return Object.assign({
-    'content-type': 'application/json'
-  }, header);
 }
 
 export function createXHR() {
