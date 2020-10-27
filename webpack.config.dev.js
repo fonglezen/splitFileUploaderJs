@@ -3,6 +3,7 @@ const commonConfig = require('./webpack.config.common');
 const path = require('path');
 
 const devConfig = {
+  mode: 'development',
   output: {
     filename: 'index.js',
     path: path.resolve(__dirname, 'dist'),
