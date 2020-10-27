@@ -12,22 +12,51 @@
   <script>
     const uploadBtn = document.getElementById('uploadBtn');
     const fileInput = document.getElementById('file');
+    const uploader = self.uploader.default;
+    let observable;
 
     fileInput.addEventListener('change', handleChange, false);
-    const uploader = self.uploader.default;
+    uploadBtn.addEventListener('click', function() {
+      const observer = observable.subscribe({
+        next: function(data) {
+          console.log(data);
+        },
+        error: function(error) {
+          console.log(error);
+        },
+        complete: function(res) {
+          console.log(res);
+        }
+      });
+    }, false)
+
     function handleChange(event) {
       const file = event.target.files[0],
             key = '123',
-            config = {},
-            customVars = {},
-            putExtra = {};
-
-      
-      const observer = uploader({
+            config = {
+              path: '/upload',
+              chunkHeaders: {
+                'Content-type': "multipart/form-data"
+              },
+              uploadChunkMethod: 'POST'
+            },
+            customVars = {
+              taskId: '',
+              user: 'caas',
+              multiBlock: true,
+              breakError: true,
+            },
+            putExtra = {
+              fileName: 'fileName',
+              fileSize: 'fileSize',
+              chunkSize: 'blockSize',
+              totalChunksCount: 'totalBlock',
+              chunkIndex: 'index',
+              file: 'data'
+            };
+      observable = uploader({
         file, key, config, customVars, putExtra
       });
-
-      console.log(observer);
     }
 
     

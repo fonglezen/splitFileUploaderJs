@@ -173,10 +173,13 @@ class Resume extends _base__WEBPACK_IMPORTED_MODULE_2__.default {
       reuseSaved();
       return;
     }
-    const md5 = await _utils__WEBPACK_IMPORTED_MODULE_0__.computeMd5(chunk);
-    if (info && md5 === info.md5) {
-      reuseSaved();
-      return;
+    // 只有需要md5检查才计算
+    if(shouldCheckMD5) {
+      const md5 = await _utils__WEBPACK_IMPORTED_MODULE_0__.computeMd5(chunk);
+      if (info && md5 === info.md5) {
+        reuseSaved();
+        return;
+      }
     }
     const onProgress = (data) => {
       this.updateChunkProgress(data.loaded, index);
@@ -195,7 +198,7 @@ class Resume extends _base__WEBPACK_IMPORTED_MODULE_2__.default {
         options: requestOptions,
         method: this.config.uploadChunkMethod,
         url: this.config.path,
-        uploadInfo: getUploadInfo,
+        uploadInfo: this.getUploadInfo(),
         index: chunkInfo.index,
       }
     );
@@ -313,8 +316,8 @@ class Resume extends _base__WEBPACK_IMPORTED_MODULE_2__.default {
   getUploadChunkFormData({chunk, index}) {
     const formdata = new FormData();
     if(this.customVars) {
-      for (const key in object) {
-        const value = object[key];
+      for (const key in this.customVars) {
+        const value = this.customVars[key];
         formdata.append(key, value);
       }
     }
@@ -323,7 +326,7 @@ class Resume extends _base__WEBPACK_IMPORTED_MODULE_2__.default {
       if(field && this.getPutExtraField(field)) {
         if(field === 'file') {
           formdata.append(this.getPutExtraField(field), chunk);
-        }else if(field === 'index') {
+        }else if(field === 'chunkIndex') {
           formdata.append(this.getPutExtraField(field), index);
         }else{
           formdata.append(this.getPutExtraField(field), this.getPutExtraData(field));
@@ -1349,7 +1352,7 @@ const putExtraMethods = {
     return this.getLocalKey();
   },
   chunkSize: function() {
-    return this.config.chunkSize;
+    return this.config.chunkSize * 1024**2;
   },
   totalChunksCount: function() {
     return this.chunks && this.chunks.length;
@@ -1364,25 +1367,25 @@ const putExtraMethods = {
 
 const putExtraFiled = {
   file: function() {
-    return this.putExtra && this.putExtra.file || 'file';
+    return this.putExtra && this.putExtra.file || '';
   },
   fileName: function() {
-    return this.putExtra && this.putExtra.fileName || 'fileName';
+    return this.putExtra && this.putExtra.fileName || '';
   },
   fileSize: function() {
-    return this.putExtra && this.putExtra.fileSize || 'fileSize';
+    return this.putExtra && this.putExtra.fileSize || '';
   },
   fileKey: function() {
-    return this.putExtra && this.putExtra.fileKey || 'fileKey';
+    return this.putExtra && this.putExtra.fileKey || '';
   },
   chunkSize: function() {
-    return this.putExtra && this.putExtra.chunkSize || 'chunkSize';
+    return this.putExtra && this.putExtra.chunkSize || '';
   },
   totalChunksCount: function() {
-    return this.putExtra && this.putExtra.totalChunksCount || 'totalChunksCount';
+    return this.putExtra && this.putExtra.totalChunksCount || '';
   },
   chunkIndex: function() {
-    return this.putExtra && this.putExtra.chunkIndex || 'chunkIndex';
+    return this.putExtra && this.putExtra.chunkIndex || '';
   },
 };
 
@@ -1417,7 +1420,7 @@ class Base {
 
   getPutExtraData(field) {
     const extrafield = field && putExtraFiled[field].call(this);
-    return extrafield && putExtraMethods[extrafield] && putExtraMethods[extrafield].call(this) || '';
+    return extrafield && putExtraMethods[field] && putExtraMethods[field].call(this) || '';
   }
 
   getPutExtraField(field) {

@@ -1,14 +1,14 @@
 const Koa = require('koa');
 const Router = require('koa-router');
+const multer = require('koa-multer');
 
 const app = new Koa();
 const router = new Router();
-
-// routes
-router.post('/upload', async (ctx) => {
-  // 先答应获取到的数据看看
-  console.log(ctx);
+const upload = multer({
+  dest: './files/'
 });
+// routes
+router.post('/upload', upload.any());
 
 app.use(router.routes());
 app.listen(5000);

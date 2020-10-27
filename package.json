@@ -1,12 +1,13 @@
 {
   "name": "split-file-uploader-js",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "split file uploader",
   "main": "./dist/index.js",
   "scripts": {
-    "dev": "webpack --config webpack.config.dev.js",
+    "dev": "webpack --config webpack.config.dev.js --watch",
     "build": "webpack --config webpack.config.prod.js",
-    "serve": "nodemon ./demo/server.js"
+    "serve": "nodemon ./demo/server.js",
+    "page": "http-server ./demo --proxy http://localhost:5000"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "@babel/preset-env": "^7.12.1",
     "babel-loader": "^8.1.0",
     "koa": "^2.13.0",
+    "koa-multer": "^1.0.2",
     "koa-router": "^9.4.0",
     "nodemon": "^2.0.6",
     "webpack": "^5.1.3",

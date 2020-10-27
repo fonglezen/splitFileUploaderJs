@@ -99,7 +99,7 @@ export default class Resume extends Base {
         options: requestOptions,
         method: this.config.uploadChunkMethod,
         url: this.config.path,
-        uploadInfo: getUploadInfo,
+        uploadInfo: this.getUploadInfo(),
         index: chunkInfo.index,
       }
     );
@@ -217,8 +217,8 @@ export default class Resume extends Base {
   getUploadChunkFormData({chunk, index}) {
     const formdata = new FormData();
     if(this.customVars) {
-      for (const key in object) {
-        const value = object[key];
+      for (const key in this.customVars) {
+        const value = this.customVars[key];
         formdata.append(key, value);
       }
     }
@@ -227,7 +227,7 @@ export default class Resume extends Base {
       if(field && this.getPutExtraField(field)) {
         if(field === 'file') {
           formdata.append(this.getPutExtraField(field), chunk);
-        }else if(field === 'index') {
+        }else if(field === 'chunkIndex') {
           formdata.append(this.getPutExtraField(field), index);
         }else{
           formdata.append(this.getPutExtraField(field), this.getPutExtraData(field));

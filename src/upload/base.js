@@ -12,7 +12,7 @@ const putExtraMethods = {
     return this.getLocalKey();
   },
   chunkSize: function() {
-    return this.config.chunkSize;
+    return this.config.chunkSize * 1024**2;
   },
   totalChunksCount: function() {
     return this.chunks && this.chunks.length;
@@ -27,25 +27,25 @@ const putExtraMethods = {
 
 const putExtraFiled = {
   file: function() {
-    return this.putExtra && this.putExtra.file || 'file';
+    return this.putExtra && this.putExtra.file || '';
   },
   fileName: function() {
-    return this.putExtra && this.putExtra.fileName || 'fileName';
+    return this.putExtra && this.putExtra.fileName || '';
   },
   fileSize: function() {
-    return this.putExtra && this.putExtra.fileSize || 'fileSize';
+    return this.putExtra && this.putExtra.fileSize || '';
   },
   fileKey: function() {
-    return this.putExtra && this.putExtra.fileKey || 'fileKey';
+    return this.putExtra && this.putExtra.fileKey || '';
   },
   chunkSize: function() {
-    return this.putExtra && this.putExtra.chunkSize || 'chunkSize';
+    return this.putExtra && this.putExtra.chunkSize || '';
   },
   totalChunksCount: function() {
-    return this.putExtra && this.putExtra.totalChunksCount || 'totalChunksCount';
+    return this.putExtra && this.putExtra.totalChunksCount || '';
   },
   chunkIndex: function() {
-    return this.putExtra && this.putExtra.chunkIndex || 'chunkIndex';
+    return this.putExtra && this.putExtra.chunkIndex || '';
   },
 };
 
@@ -80,7 +80,7 @@ class Base {
 
   getPutExtraData(field) {
     const extrafield = field && putExtraFiled[field].call(this);
-    return extrafield && putExtraMethods[extrafield] && putExtraMethods[extrafield].call(this) || '';
+    return extrafield && putExtraMethods[field] && putExtraMethods[field].call(this) || '';
   }
 
   getPutExtraField(field) {
