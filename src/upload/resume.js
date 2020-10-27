@@ -74,10 +74,13 @@ export default class Resume extends Base {
       reuseSaved();
       return;
     }
-    const md5 = await utils.computeMd5(chunk);
-    if (info && md5 === info.md5) {
-      reuseSaved();
-      return;
+    // 只有需要md5检查才计算
+    if(shouldCheckMD5) {
+      const md5 = await utils.computeMd5(chunk);
+      if (info && md5 === info.md5) {
+        reuseSaved();
+        return;
+      }
     }
     const onProgress = (data) => {
       this.updateChunkProgress(data.loaded, index);

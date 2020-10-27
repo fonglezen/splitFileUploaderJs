@@ -3,10 +3,20 @@ const commonConfig = require('./webpack.config.common');
 const path = require('path');
 
 const devConfig = {
-  mode: 'development',
+  mode: 'none',
+  devtool: "source-map",
   output: {
-    filename: 'index.js',
-    path: path.resolve(__dirname, 'dist'),
+    filename: 'upload.js',
+    path: path.resolve(__dirname, 'demo'),
+    library: 'uploader',
+    libraryTarget: 'umd'
   },
+  // devServer: {
+  //   compress: false,
+  //   port: 9000,
+  //   hot: true,
+  //   contentBase: path.join(__dirname, './'),
+  //   publicPath: '/demo/',
+  // }
 }
 module.exports = merge(commonConfig, devConfig);;

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo</title>
+</head>
+<body>
+  <input type="file" id="file">
+  <button id="uploadBtn">Upload</button>
+  <script src="./upload.js"></script>
+  <script>
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('file');
+
+    fileInput.addEventListener('change', handleChange, false);
+    const uploader = self.uploader.default;
+    function handleChange(event) {
+      const file = event.target.files[0],
+            key = '123',
+            config = {},
+            customVars = {},
+            putExtra = {};
+
+      
+      const observer = uploader({
+        file, key, config, customVars, putExtra
+      });
+
+      console.log(observer);
+    }
+
+    
+
+  </script>
+</body>
+</html>
