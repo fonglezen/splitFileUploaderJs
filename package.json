@@ -1,5 +1,5 @@
 {
-  "name": "splitfileuploaderjs",
+  "name": "split-file-uploader-js",
   "version": "1.0.0",
   "description": "split file uploader",
   "main": "./dist/index.js",
